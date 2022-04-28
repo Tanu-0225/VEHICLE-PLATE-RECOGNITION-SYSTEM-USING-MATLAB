@@ -1,2 +1,6 @@
 # VEHICLE-PLATE-RECOGNITION-SYSTEM-USING-MATLAB
 VPR is an image processing system that extracts and recognizes license plate numbers to identify vehicles and details. Capture image, pre-processing, plate region extraction, character segmentation in the extracted number plate, character recognition, database comparison, and result indication are the portions of the algorithm. It is a fast, efficient method for detecting car number plates that work well on complicated photos. This strategy can be employed in a variety of settings, including parking lots, toll booths, and traffic signals
+METHODOLOGY
+The software model is the first and most crucial step in this process. Image processing technology is used in the software model. MATLAB is used to build the programmes. The algorithm is broken down into the following sections: Capture image, pre-processing, plate region extraction, character segmentation in the extracted number plate, character recognition, database comparison, and result indication.
+The following image depicts the flow chart for implementing a license plate recognition system in this study. This method has several steps, one of which is MATLAB implementation.  
+![image](https://user-images.githubusercontent.com/64573376/165761698-466eb643-e058-44a1-93ec-4318e60c5d0f.png)
