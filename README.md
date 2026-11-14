@@ -2,7 +2,22 @@
 
 A vehicle plate recognition (VPR) system in MATLAB. It finds the number plate in a photo of a vehicle, splits the plate into characters and reads each character by template matching.
 
-![Flow chart](https://user-images.githubusercontent.com/64573376/165761698-466eb643-e058-44a1-93ec-4318e60c5d0f.png)
+## Flow diagram
+
+```mermaid
+flowchart TD
+    A["Vehicle photo"] --> B["Pre-processing<br/>grayscale · median filter · histogram equalisation"]
+    B --> C["Edge detection<br/>Sobel, horizontal + vertical"]
+    C --> D["Morphology<br/>remove small edges · dilate · fill holes · erode"]
+    D --> E["Candidate regions<br/>ranked by how plate-shaped they are"]
+    E --> F{"Splits into<br/>4–9 characters?"}
+    F -- "No: try next candidate" --> E
+    F -- "Yes" --> G["Crop the plate"]
+    G --> H["Character segmentation<br/>binarise · remove border · keep character-sized regions"]
+    H --> I["Character recognition<br/>normalise each character · correlate with templates"]
+    T[("NewTemplates.mat")] --> I
+    I --> J[/"Plate text, e.g. MH12AB3456"/]
+```
 
 ## Requirements
 
@@ -61,26 +76,6 @@ run_tests
 ```
 
 `run_tests` builds its own car images and templates, so it needs no data files. It checks each step and the full pipeline.
-
-## Accuracy on real photos
-
-Measured with `tests/eval_openalpr.m` on the [OpenALPR benchmark](https://github.com/openalpr/benchmarks) photos. For each region, 30% of the photos were used to build character templates and the other 70% (shown below) to test.
-
-| Region | Test photos | Plate found | Whole plate read correctly |
-|---|---|---|---|
-| Europe | 76 | 65% | 9% |
-| US | 155 | 33% | 1% |
-| Brazil | 80 | 31% | 13% |
-
-Accuracy is low on real photos. Given the exact plate location, characters are read correctly 73–89% of the time, but splitting plates into characters often fails, especially on US plates with state names and stickers. The edge-detection and template-matching method works best on clean, front-facing photos.
-
-To reproduce:
-
-```matlab
-% after: git clone https://github.com/openalpr/benchmarks.git
-cd tests
-eval_openalpr('path/to/benchmarks')
-```
 
 ## Limitations
 
