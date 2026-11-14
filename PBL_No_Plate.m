@@ -1,51 +1,45 @@
-% Number Plate Detection
-clc;
-clear all;
-close all;
-img = imread('image1.png');
-subplot(3,2,1);
-imshow(img);
-title('Original Image');
-%figure;
+% PBL_NO_PLATE  Vehicle number plate recognition.
+%   Set imageFile below (or define it in the workspace before running)
+%   and run this script. It detects the plate, splits it into characters,
+%   reads each character by template matching and prints the plate text.
+%
+%   Requires: Image Processing Toolbox, and NewTemplates.mat in the
+%   current folder (build it with createTemplates if you don't have it).
 
-img2 = rgb2gray(img);  
-img2 = medfilt2(img2);% To smoothen the image(remove noise if any) -  median filter
-img2 = histeq(img2);   % To enhance the constrast of the gray scale image - histogram eq.
-%figure;
-%imshow(img2);
-%plot(img2);
-imgX = edge(img2,'sobel','horizontal');     % Detects edges along rows
-imgY = edge(img2,'sobel','vertical');       % Detects edges along columns
-img3 = imgX|imgY;                   % Gives us a combination of edges detected along rows and columns
-subplot(3,2,2);
-imshow(img3);
-title("edge detection(sobel)");
-img3 = bwareaopen(img3, 900);       % Edges are filtered to attain the result using area opening 
-se = strel('line',2,90);            % Structuring Element is created which is a [3x1] matrix with value 1
-img3 = imdilate(img3,se);           % Image is dilated with respect to the created structuring element to get more precise edges along rows
-subplot(3,2,3);
-imshow(img3);
-title("Image dilate");
-se = strel('line',2,0);             % Another Structuring Element is generated here it is a [1x3] matrix with value 1
-img3 = imdilate(img3,se);           % Image is dilated once again to get more precise edges along columns
-% subplot(3,2,4);
-%imshow(img3);
-%title("a");
-img4 = imfill(img3,'holes');        % This step highlights the areas which could be number plates in the image
-subplot(3,2,4);
-imshow(img4);
-title("Posible no. plate position");
-img4 = bwmorph(img4,'thin',1);      % morphology
-se = strel('line',5,90);
-img5 = imerode(img4,se);
-img5 = imerode(img5,se);
-%imshow(img5);
-%title("erode")
-img6 = immultiply(img2,img5);
-subplot(3,2,5);
-imshow(img6);
-title("Multiplying with original image");
-img7 = ~im2bw(img6);
-subplot(3,2,6);
-imshow(img7);
-title("detected Number plate");
+if ~exist('imageFile', 'var')
+    imageFile = 'image1.png';
+end
+if ~isfile(imageFile)
+    error('PBL_No_Plate:noImage', ...
+        'Image "%s" not found. Set imageFile to a vehicle photo.', imageFile);
+end
+
+img = imread(imageFile);
+[plate, bbox, steps] = detectPlate(img);
+
+figure('Name', 'Number plate detection');
+subplot(3, 2, 1); imshow(img);              title('Original image');
+subplot(3, 2, 2); imshow(steps.edges);      title('Edge detection (Sobel)');
+subplot(3, 2, 3); imshow(steps.filled);     title('Dilated and filled');
+subplot(3, 2, 4); imshow(steps.candidates); title('Possible plate regions');
+
+if isempty(plate)
+    error('PBL_No_Plate:noPlate', 'No number plate found in "%s".', imageFile);
+end
+
+subplot(3, 2, 5); imshow(img); title('Detected plate');
+rectangle('Position', bbox, 'EdgeColor', 'g', 'LineWidth', 2);
+
+[chars, plateBW] = segmentCharacters(plate);
+subplot(3, 2, 6); imshow(plateBW); title(sprintf('%d characters found', numel(chars)));
+
+if isempty(chars)
+    error('PBL_No_Plate:noChars', 'No characters found on the detected plate.');
+end
+
+plateText = blanks(numel(chars));
+for k = 1:numel(chars)
+    plateText(k) = readLetter(chars{k});
+end
+
+fprintf('Number plate: %s\n', plateText);
