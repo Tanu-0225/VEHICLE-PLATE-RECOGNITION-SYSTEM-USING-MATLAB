@@ -7,7 +7,7 @@
 %   current folder (build it with createTemplates if you don't have it).
 
 if ~exist('imageFile', 'var')
-    imageFile = 'image1.png';
+    imageFile = fullfile('images', 'kerala_car.jpg');   % example photo
 end
 if ~isfile(imageFile)
     error('PBL_No_Plate:noImage', ...
@@ -42,4 +42,5 @@ for k = 1:numel(chars)
     plateText(k) = readLetter(chars{k});
 end
 
+title(sprintf('Plate text: %s', plateText));
 fprintf('Number plate: %s\n', plateText);
